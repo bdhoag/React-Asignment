@@ -10,26 +10,44 @@ export default function ProductList() {
   const [productList, setProductList] = useState();
   const [addProduct, setAddProduct] = useState(false);
 
-  useEffect(() => {
-    axios.get('/Products.json')
+  const load = async () => {
+    await axios.get(`https://6678c7dd0bd45250561fc764.mockapi.io/api/asm/staffManagement`)
       .then(res => {
-        setProductList(res.data.products);
+        setProductList(res.data.data);
       })
-      .catch(() => {
+      .catch(error => {
+        console.log(error.message);
         toast.error('Failed to load products');
-      });
-  }, []);
+      })
+      .finally(
+        () => {
+        }
+      );
+  }
 
-  const handleDelete = (product) => {
+  useEffect(() => {
+    load();
+  }, [addProduct]);
+
+  const handleDelete = async (product) => {
     if (window.confirm(`${product.name} will be deleted! Do you want to delete this product?`)) {
-      setProductList(productList.filter(prod => prod.id !== product.id));
-      toast.info('Product deleted');
+      await axios.delete(`https://6678c7dd0bd45250561fc764.mockapi.io/api/asm/staffManagement/${product.id}`)
+        .then(res => {
+          if (res.data) {
+            load();
+            toast.success('Product deleted');
+          }
+        })
+        .catch(error => {
+          console.log(error.message);
+          toast.error('Failed to load products');
+        })
+        .finally(
+          () => {
+          }
+        );
     }
   };
-
-  const handleCreate = (product) => {
-    setProductList([...productList, { ...product, id: Date.now().toString() }]);
-  }
 
   const closeModal = () => {
     setAddProduct(false);
@@ -41,7 +59,6 @@ export default function ProductList() {
       <AddProduct
         isOpen={addProduct}
         closeModal={closeModal}
-        newProduct={handleCreate}
       />
       <div className="text-white text-center text-3xl font-bold py-2">
         Product List
@@ -101,8 +118,8 @@ export default function ProductList() {
           </div>
         </>
         :
-        <div className="text-white h-52 text-2xl font-semibold content-center text-center">
-          No products found.
+        <div className="text-white h-52 text-2xl font-semibold content-center text-center animate-pulse">
+          No product found
         </div>
       }
     </div>

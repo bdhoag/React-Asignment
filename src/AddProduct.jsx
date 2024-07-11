@@ -1,3 +1,4 @@
+import axios from 'axios';
 import React, { useEffect, useState } from 'react'
 import { toast } from 'react-toastify';
 
@@ -19,11 +20,19 @@ export default function AddProduct(props) {
     });
   };
 
-  const handleAddProduct = (e) => {
+  const handleAddProduct = async (e) => {
     e.preventDefault();
-    props.newProduct(newProduct);
-    handleClose();
-    toast.success('Product added successfully');
+    await axios.post(`https://6678c7dd0bd45250561fc764.mockapi.io/api/asm/staffManagement`, newProduct)
+      .then(res => {
+        if (res.data) {
+          toast.success('Product added successfully');
+          handleClose();
+        }
+      })
+      .catch(error => {
+        console.log(error.message);
+        toast.error('Failed to load products');
+      });
   };
 
   useEffect(() => {

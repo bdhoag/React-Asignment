@@ -19,16 +19,21 @@ const ProductDetail = () => {
     image: ''
   });
 
-  useEffect(() => {
-    axios.get('/Products.json')
+  const load = async () => {
+    await axios.get(`https://6678c7dd0bd45250561fc764.mockapi.io/api/asm/staffManagement/${id}`)
       .then(response => {
-        setProduct(response.data.products.find(p => p.id === id));
-        setUpdatedProduct(response.data.products.find(p => p.id === id));
+        setProduct(response.data);
+        setUpdatedProduct(response.data);
       })
       .catch(error => {
         console.error('Failed to fetch product details', error);
         toast.error('Failed to fetch product details');
       });
+
+  };
+
+  useEffect(() => {
+    load();
   }, [id]);
 
   const calcDiscount = (price, currentPrice) => {
@@ -44,11 +49,21 @@ const ProductDetail = () => {
     });
   };
 
-  const handleEditProduct = (e) => {
+  const handleEditProduct = async (e) => {
     e.preventDefault();
-    setProduct(updatedProduct);
-    setIsEditing(false);
-    toast.success('Product updated');
+    await axios.put(`https://6678c7dd0bd45250561fc764.mockapi.io/api/asm/staffManagement/${id}`, updatedProduct)
+      .then(response => {
+        if (response.data) {
+          setProduct(response.data);
+          setUpdatedProduct(response.data);
+          setIsEditing(false);
+          toast.success('Product updated');
+        }
+      })
+      .catch(error => {
+        console.error('Failed to edit product details', error);
+        toast.error('Failed to edit product details');
+      });
   };
 
   const handleCancelEdit = () => {
